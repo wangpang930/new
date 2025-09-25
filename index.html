@@ -5,31 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>锦鲤欧皇大食堂 - 水族馆主题</title>
     <style>
-        /* --- 基础重置与全局样式 --- */
+        /* --- 1. 修改 body, html 样式 --- */
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
-            min-height: 100vh;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: linear-gradient(160deg, #001a4e 0%, #3e1b7c 100%);
+            /* 将背景和 overflow 移走，允许滚动 */
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            align-items: flex-start; /* 改为从顶部对齐，优化滚动体验 */
+            padding: 5vh 20px; /* 增加上下边距，使其在长屏幕上也能大致居中 */
             box-sizing: border-box;
-            overflow: hidden;
-            position: relative;
+            min-height: 100vh;
         }
 
-        /* --- 动态气泡背景 --- */
+        /* --- 2. 新增固定的背景层 --- */
+        .fixed-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* 把它放在最底层 */
+            background: linear-gradient(160deg, #001a4e 0%, #3e1b7c 100%);
+            overflow: hidden; /* 在这里锁死滚动，只影响背景和气泡 */
+        }
+
+        /* --- 动态气泡背景 (无变化) --- */
         .bubbles {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;
         }
 
         .bubble {
@@ -53,7 +62,7 @@
         .bubble:nth-child(6) { width: 60px; height: 60px; left: 80%; animation-duration: 16s; animation-delay: 2s; }
         .bubble:nth-child(7) { width: 25px; height: 25px; left: 90%; animation-duration: 10s; animation-delay: 6s; }
         
-        /* --- 主容器卡片 --- */
+        /* --- 主容器卡片 (无变化) --- */
         .container {
             background-color: rgba(23, 30, 70, 0.3);
             border-radius: 20px;
@@ -67,7 +76,7 @@
             width: 100%;
             animation: fadeIn 0.8s ease-out;
             position: relative;
-            z-index: 1;
+            z-index: 1; /* 确保在背景之上 */
         }
         
         @keyframes fadeIn {
@@ -151,6 +160,9 @@
         }
 
         @media (max-width: 480px) {
+            body, html {
+                padding: 20px; /* 手机上边距小一点 */
+            }
             .container { padding: 25px 20px; }
             h1 { font-size: 1.9rem; }
             .info { font-size: 0.95rem; }
@@ -159,9 +171,14 @@
     </style>
 </head>
 <body>
-    <div class="bubbles">
-        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    <!-- 3. 把背景和气泡放进这个新的 div 里 -->
+    <div class="fixed-background">
+        <div class="bubbles">
+            <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        </div>
     </div>
+    
+    <!-- 主要内容容器保持不变 -->
     <div class="container">
         <img src="https://i.postimg.cc/zvXZTRVb/9-4-1.gif" alt="锦鲤欧皇Logo" class="logo">
         <h1>锦鲤欧皇大食堂</h1>
