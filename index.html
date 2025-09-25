@@ -54,7 +54,6 @@
             opacity: 0; 
             transition: opacity 0.5s ease;
             cursor: pointer;
-            /* [修改] 将晃动动画直接应用在这里 */
             animation: wobble 6s ease-in-out infinite;
         }
         
@@ -67,17 +66,12 @@
         }
 
         @keyframes pop-out {
-            from {
-                transform: scale(1);
-                opacity: 0.9;
-            }
             to {
                 transform: scale(0);
                 opacity: 0;
             }
         }
 
-        /* [新增] 用于控制消失状态的CSS类 */
         .member-bubble.popping-out {
             animation: pop-out 0.3s ease-out forwards;
         }
@@ -294,11 +288,11 @@
                 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png'
             ];
 
-            const initialBubbleCount = 300; // [修改] 增加初始数量以填满屏幕
+            const initialBubbleCount = 500; // [优化] 大幅增加目标数量
             const minSize = 30;     
             const maxSize = 50;     
             const placedBubbles = []; 
-            const maxAttempts = 100;    // [修改] 增加尝试次数
+            const maxAttempts = 150;    // [优化] 相应增加尝试次数
 
             // --- 核心功能函数 ---
             function createBubble() {
@@ -331,7 +325,7 @@
                     
                     const bubble = document.createElement('div');
                     bubble.className = 'member-bubble';
-                    bubble.dataset.id = currentBubbleInfo.id;
+                    bubble.dataset.id = currentBubbleInfo.id; // ID用于从数组中移除
 
                     const size = currentBubbleInfo.radius * 2;
                     bubble.style.width = `${size}px`;
@@ -339,39 +333,40 @@
                     bubble.style.left = `${currentBubbleInfo.x}px`;
                     bubble.style.top = `${currentBubbleInfo.y}px`;
                     bubble.style.backgroundImage = `url(${memberIcons[Math.floor(Math.random() * memberIcons.length)]})`;
-                    bubble.style.animationDuration = `${Math.random() * 4 + 6}s`; // 6-10秒
-                    bubble.style.animationDelay = `-${Math.random() * 5}s`; // 立即开始且起点随机
+                    bubble.style.animationDuration = `${Math.random() * 4 + 6}s`;
+                    bubble.style.animationDelay = `-${Math.random() * 5}s`;
                     
-                    bubble.addEventListener('click', handleBubbleClick, { once: true }); // [修改] 使用once确保只触发一次
-
                     bubbleContainer.appendChild(bubble);
-                    
-                    setTimeout(() => { bubble.style.opacity = '0.9'; }, 100);
+                    setTimeout(() => { bubble.style.opacity = '0.9'; }, 50);
                 }
             }
 
-            /**
-             * [修改] 重写点击处理函数，使其更可靠
-             */
-            function handleBubbleClick(event) {
-                const clickedBubble = event.currentTarget;
-                clickedBubble.style.cursor = 'default';
+            // --- [核心修改] 使用事件委托来处理所有泡泡的点击 ---
+            bubbleContainer.addEventListener('click', function(event) {
+                // 检查被点击的是否是泡泡本身，而不是容器的空白处
+                const clickedBubble = event.target.closest('.member-bubble');
+                
+                // 如果不是泡泡，或者泡泡正在消失中，则不执行任何操作
+                if (!clickedBubble || clickedBubble.classList.contains('popping-out')) {
+                    return;
+                }
 
+                // 从记录中移除该泡泡的数据
                 const bubbleId = parseFloat(clickedBubble.dataset.id);
                 const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
                 if (indexToRemove > -1) {
                     placedBubbles.splice(indexToRemove, 1);
                 }
 
-                // 1. 添加消失动画的CSS类
+                // 添加消失动画类
                 clickedBubble.classList.add('popping-out');
                 
-                // 2. 使用setTimeout，在动画结束后执行操作 (0.3s = 300ms)
+                // 动画结束后移除并生成新的
                 setTimeout(() => {
-                    clickedBubble.remove(); // 移除旧泡泡
-                    createBubble();         // 生成一新个泡泡
-                }, 300);
-            }
+                    clickedBubble.remove();
+                    createBubble();
+                }, 300); // 300ms 对应动画时长
+            });
 
             // --- 初始化 ---
             for (let i = 0; i < initialBubbleCount; i++) {
