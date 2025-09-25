@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>锦鲤欧皇大食堂</title>
     <style>
+        /* [修改] 引入新的像素字体 */
+        @import url("https://fontsapi.zeoseven.com/568/main/result.css");
+
         /* --- 基础重置与全局样式 --- */
         body, html {
             margin: 0;
@@ -105,11 +108,21 @@
         }
 
         h1 {
-            font-size: 2.3rem;
-            color: #581c87;
+            font-size: 2.5rem; /* 调整字号以适应像素字体 */
             margin: 0 0 20px 0;
-            font-weight: 700;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+            
+            /* [修改] 应用新的像素字体 */
+            font-family: "Fusion Pixel 10px M zh_hans", sans-serif;
+            font-weight: normal; 
+            
+            /* 保留漂亮的渐变色 */
+            background: linear-gradient(45deg, #f089d7, #5784f1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            
+            /* [修改] 更换为适合像素风格的硬边阴影 */
+            text-shadow: 3px 3px 0px rgba(88, 28, 135, 0.3);
         }
 
         .ticket {
@@ -160,7 +173,6 @@
             animation: aurora-glow 8s ease infinite;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             transition: transform 0.2s ease;
-            /* [修改] 解决与普通文本对不齐的问题 */
             vertical-align: middle; 
         }
         .highlight:hover {
@@ -216,17 +228,16 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        /* [修改] 更换为更清澈、明亮的糖果色 */
-        .platform-item-1 { background-color: #a0e9ff; } /* 晴空蓝 */
-        .platform-item-2 { background-color: #dcb4f5; } /* 丁香紫 */ 
-        .platform-item-3 { background-color: #ffafcc; } /* 草莓粉 */
+        .platform-item-1 { background-color: #a0e9ff; }
+        .platform-item-2 { background-color: #dcb4f5; }
+        .platform-item-3 { background-color: #ffafcc; }
         
         @media (max-width: 480px) {
             body, html {
                 padding: 20px;
             }
             .container { padding: 25px 20px; }
-            h1 { font-size: 1.9rem; }
+            h1 { font-size: 2rem; } /* 调整移动端标题大小 */
             .info { font-size: 0.95rem; }
             .platform { font-size: 1rem; }
         }
