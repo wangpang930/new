@@ -145,7 +145,6 @@
             100% { transform: translateX(250%) skewX(-15deg); }
         }
         
-        /* [修改] .highlight 标签样式（小红书/锦鲤）保留完整特效 */
         .highlight {
             position: relative;
             overflow: hidden;
@@ -161,6 +160,8 @@
             animation: aurora-glow 8s ease infinite;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             transition: transform 0.2s ease;
+            /* [修改] 解决与普通文本对不齐的问题 */
+            vertical-align: middle; 
         }
         .highlight:hover {
             transform: scale(1.05) translateY(-2px);
@@ -179,13 +180,10 @@
         
         /* --- 平台信息区域 --- */
         .platform {
-            color: #581c87;
             padding: 15px;
             border-radius: 10px;
             margin-top: 30px;
             font-size: 1.1rem;
-            font-weight: 500;
-            letter-spacing: 1px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             background: rgba(255, 255, 255, 0.15);
             display: flex;
@@ -195,39 +193,33 @@
             gap: 8px;
         }
 
-        /* [新增] 包裹平台标签的容器，应用连续渐变 */
-        .platform-items-wrapper {
-            display: inline-flex;
-            border-radius: 6px;
-            background: linear-gradient(100deg, #89cff0, #c8a2c8); /* 从婴儿蓝到淡紫色的柔和渐变 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        .platform-title {
+            font-weight: 500;
+            background: linear-gradient(90deg, #f794c4, #89cff0); 
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-        .platform-items-wrapper:hover {
-            transform: scale(1.05) translateY(-2px);
+
+        .platform-item {
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .platform-item:hover {
+            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
-        /* [修改] .platform-item 样式被简化，背景透明，无特效 */
-        .platform-item {
-            background: transparent;
-            color: #ffffff;
-            padding: 5px 12px;
-            font-weight: 600;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        
-        /* [新增] 为非最后一个标签添加右侧分割线 */
-        .platform-item:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            right: 0;
-            top: 20%;
-            height: 60%;
-            width: 1px;
-            background: rgba(255, 255, 255, 0.3);
-        }
+        /* [修改] 更换为更清澈、明亮的糖果色 */
+        .platform-item-1 { background-color: #a0e9ff; } /* 晴空蓝 */
+        .platform-item-2 { background-color: #dcb4f5; } /* 丁香紫 */ 
+        .platform-item-3 { background-color: #ffafcc; } /* 草莓粉 */
         
         @media (max-width: 480px) {
             body, html {
@@ -258,13 +250,10 @@
         </div>
         
         <div class="platform">
-            <span>全平台airp社区：</span>
-            <!-- [修改] 将平台标签包裹起来 -->
-            <div class="platform-items-wrapper">
-                <span class="platform-item">酒馆</span>
-                <span class="platform-item">tavo</span>
-                <span class="platform-item">omate</span>
-            </div>
+            <span class="platform-title">全平台airp社区：</span>
+            <span class="platform-item platform-item-1">酒馆</span>
+            <span class="platform-item platform-item-2">tavo</span>
+            <span class="platform-item platform-item-3">omate</span>
         </div>
     </div>
 
