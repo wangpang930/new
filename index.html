@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>锦鲤欧皇大食堂</title>
     <style>
-        /* [修改] 引入新的像素字体 */
         @import url("https://fontsapi.zeoseven.com/568/main/result.css");
 
         /* --- 基础重置与全局样式 --- */
@@ -108,20 +107,14 @@
         }
 
         h1 {
-            font-size: 2.5rem; /* 调整字号以适应像素字体 */
+            font-size: 2.5rem;
             margin: 0 0 20px 0;
-            
-            /* [修改] 应用新的像素字体 */
             font-family: "Fusion Pixel 10px M zh_hans", sans-serif;
             font-weight: normal; 
-            
-            /* 保留漂亮的渐变色 */
             background: linear-gradient(45deg, #f089d7, #5784f1);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            
-            /* [修改] 更换为适合像素风格的硬边阴影 */
             text-shadow: 3px 3px 0px rgba(88, 28, 135, 0.3);
         }
 
@@ -205,12 +198,15 @@
             gap: 8px;
         }
 
+        /* [修改] 为标题也应用像素字体和阴影 */
         .platform-title {
-            font-weight: 500;
+            font-family: "Fusion Pixel 10px M zh_hans", sans-serif;
+            font-weight: normal;
             background: linear-gradient(90deg, #f794c4, #89cff0); 
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            text-shadow: 2px 2px 0px rgba(88, 28, 135, 0.2); /* 添加较小的硬边阴影 */
         }
 
         .platform-item {
@@ -237,7 +233,7 @@
                 padding: 20px;
             }
             .container { padding: 25px 20px; }
-            h1 { font-size: 2rem; } /* 调整移动端标题大小 */
+            h1 { font-size: 2rem; }
             .info { font-size: 0.95rem; }
             .platform { font-size: 1rem; }
         }
