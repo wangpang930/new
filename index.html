@@ -42,12 +42,15 @@
             height: 100%;
         }
 
+        /* [修改] 调整了泡泡的样式以完整显示图片 */
         .member-bubble {
             position: absolute;
             bottom: -150px;
             border-radius: 50%;
-            background-size: cover;
+            background-size: contain; /* [修改] 从 cover 改为 contain，确保图片完整显示 */
+            background-repeat: no-repeat; /* [新增] 防止图片平铺 */
             background-position: center;
+            background-color: rgba(255, 255, 255, 0.2); /* [新增] 为留白区域增加一个半透明底色 */
             border: 2px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             animation-iteration-count: infinite;
@@ -117,8 +120,7 @@
             color: transparent;
             text-shadow: 3px 3px 0px rgba(88, 28, 135, 0.3);
         }
-        
-        /* [新增] 定义票根的漂浮动画 */
+
         @keyframes ticketFloat {
             0% {
                 transform: translateY(0px) rotate(-1deg);
@@ -131,20 +133,18 @@
             }
         }
 
-        /* [修改] 为票根应用新的漂浮动画 */
         .ticket {
             max-width: 100%;
             height: auto;
             margin: 25px 0;
-            cursor: pointer; /* 提示用户这是可以交互的 */
-            transition: transform 0.3s ease-in-out; /* 添加平滑过渡效果 */
-            animation: ticketFloat 3.5s ease-in-out infinite; /* 应用持续漂浮动画 */
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            animation: ticketFloat 3.5s ease-in-out infinite;
         }
         
-        /* [修改] 定义悬停时的效果：放大并暂停漂浮 */
         .ticket:hover {
-            animation-play-state: paused; /* 暂停动画 */
-            transform: scale(1.08) rotate(2deg); /* 放大并稍微旋转 */
+            animation-play-state: paused;
+            transform: scale(1.08) rotate(2deg);
         }
         
         .info {
@@ -283,18 +283,18 @@
             const bubbleContainer = document.querySelector('.member-bubbles');
             
             const memberIcons = [
-                'https://i.postimg.cc/j55dq3Pm/1.png',
-                'https://i.postimg.cc/FKGH4Xd0/2.png',
-                'https://i.postimg.cc/BvJnkn6q/3.png',
-                'https://i.postimg.cc/qR5BNcGR/kiki.png',
-                'https://i.postimg.cc/t70X5XwG/image.png',
-                'https://i.postimg.cc/VsJnDDpK/image.png',
-                'https://i.postimg.cc/cLBnrjtL/image.png',
-                'https://i.postimg.cc/sfbS85Rs/image.png',
-                'https://i.postimg.cc/9fXqTpyt/image.png',
-                'https://i.postimg.cc/Qx55rVX5/image.png',
-                'https://i.postimg.cc/XqBjdZ2g/image.png',
-                'https://i.postimg.cc/vZsn8MBK/image.png'
+                'https://i.postimg.cc/j55dq3Pm/1.png',      // 螃蟹
+                'https://i.postimg.cc/FKGH4Xd0/2.png',      // m老师
+                'https://i.postimg.cc/BvJnkn6q/3.png',      // 弥
+                'https://i.postimg.cc/qR5BNcGR/kiki.png',   // kiki
+                'https://i.postimg.cc/t70X5XwG/image.png',  // 咪
+                'https://i.postimg.cc/VsJnDDpK/image.png',  // 江
+                'https://i.postimg.cc/cLBnrjtL/image.png',  // 汤圆
+                'https://i.postimg.cc/sfbS85Rs/image.png',  // 米线
+                'https://i.postimg.cc/9fXqTpyt/image.png',  // 颂
+                'https://i.postimg.cc/Qx55rVX5/image.png',  // 鲨鱼
+                'https://i.postimg.cc/XqBjdZ2g/image.png',  // 鸡腿
+                'https://i.postimg.cc/vZsn8MBK/image.png'   // 鸦鸦
             ];
 
             const bubbleCount = 40; 
