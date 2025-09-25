@@ -111,15 +111,17 @@
             const card = document.querySelector('.container');
             const cardRect = card.getBoundingClientRect();
             
-            // 【新增】定义卡片中心的“安全区域”
-            const safeZoneScale = 0.75; // 安全区域占卡片尺寸的比例（60%）
-            const safeZoneWidth = cardRect.width * safeZoneScale;
-            const safeZoneHeight = cardRect.height * safeZoneScale;
+            // 【修改】定义卡片中心“安全区域”的独立边距比例
+            const safeZonePaddingHorizontal = 0.2; // 左右边距各占卡片宽度的 20%
+            const safeZonePaddingTop = 0.3;        // 顶部边距占卡片高度的 30%
+            const safeZonePaddingBottom = 0.2;     // 底部边距占卡片高度的 20%
+
+            // 【修改】根据独立边距计算安全区域
             const safeZoneRect = {
-                left: cardRect.left + (cardRect.width - safeZoneWidth) / 2,
-                right: cardRect.right - (cardRect.width - safeZoneWidth) / 2,
-                top: cardRect.top + (cardRect.height - safeZoneHeight) / 2,
-                bottom: cardRect.bottom - (cardRect.height - safeZoneHeight) / 2
+                left:   cardRect.left + cardRect.width * safeZonePaddingHorizontal,
+                right:  cardRect.right - cardRect.width * safeZonePaddingHorizontal,
+                top:    cardRect.top + cardRect.height * safeZonePaddingTop,
+                bottom: cardRect.bottom - cardRect.height * safeZonePaddingBottom
             };
 
             const memberIcons = [
@@ -137,7 +139,7 @@
             const placedBubbles = []; 
             const maxAttempts = 200;
 
-            // --- 核心功能函数 ---
+            // --- 核心功能函数（内部逻辑无改动） ---
             function createBubble() {
                 let currentBubbleInfo = {};
                 let hasOverlap = true;
@@ -149,7 +151,6 @@
                     const x = Math.random() * (screenWidth - size);
                     const y = Math.random() * (screenHeight - size);
                     
-                    // 【修改】检查泡泡是否与“安全区域”重叠
                     const isOverlappingSafeZone = (
                         x + size > safeZoneRect.left &&
                         x < safeZoneRect.right &&
@@ -159,13 +160,12 @@
 
                     if (isOverlappingSafeZone) {
                         attempts++;
-                        continue; // 如果重叠，跳过本次循环
+                        continue; 
                     }
 
                     currentBubbleInfo = { id: Date.now() + Math.random(), x, y, radius };
                     hasOverlap = false;
 
-                    // 检查泡泡之间是否重叠
                     for (const placed of placedBubbles) {
                         const dx = currentBubbleInfo.x - placed.x;
                         const dy = currentBubbleInfo.y - placed.y;
