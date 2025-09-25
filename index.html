@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>锦鲤欧皇大食堂</title>
     <style>
-        /* CSS 样式部分与上次修复后完全相同，无需改动 */
+        /* CSS 部分完全不变 */
         @import url("https://fontsapi.zeoseven.com/568/main/result.css");
         body, html {
             margin: 0; padding: 0; width: 100%;
@@ -74,71 +74,58 @@
         .platform-item-2 { background-color: #dcb4f5; }
         .platform-item-3 { background-color: #ffafcc; }
 
-        /* --- 【新增】彩蛋卡片的 CSS 样式 --- */
         .easter-egg-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(5px);
             z-index: 1000;
-            display: none; /* 默认隐藏 */
-            justify-content: center;
-            align-items: center;
+            display: none;
+            justify-content: center; align-items: center;
             animation: fadeIn 0.3s ease;
+            padding: 20px; box-sizing: border-box;
         }
 
         .easter-egg-card {
-            background-color: #fff;
-            border-radius: 16px;
-            padding: 25px 30px;
-            text-align: center;
+            background-color: #fff; border-radius: 16px;
+            padding: 25px 30px; text-align: center;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            max-width: 320px;
-            width: 90%;
+            max-width: 350px; width: 100%;
             position: relative;
+            transform: scale(0.95); opacity: 0;
+            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes popIn {
+            to { transform: scale(1); opacity: 1; }
         }
 
         .easter-egg-card img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 15px;
+            width: 80px; height: 80px;
+            border-radius: 50%; margin-bottom: 15px;
             border: 3px solid #ffafcc;
+            object-fit: cover;
         }
 
         .easter-egg-card h3 {
-            margin: 0 0 10px;
-            font-size: 1.5rem;
-            color: #333;
+            margin: 0 0 10px; font-size: 1.5rem; color: #333;
         }
 
         .easter-egg-card p {
-            margin: 0 0 20px;
-            font-size: 1rem;
-            color: #666;
-            line-height: 1.6;
+            margin: 0 0 20px; font-size: 1rem; color: #666; line-height: 1.6;
         }
         
         .easter-egg-close-btn {
-            background-color: #ffafcc;
-            color: white;
-            border: none;
-            border-radius: 8px;
+            background-color: #ffafcc; color: white;
+            border: none; border-radius: 8px;
             padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
+            font-size: 1rem; font-weight: bold; cursor: pointer;
             transition: background-color 0.2s ease, transform 0.2s ease;
+            min-width: 120px;
         }
 
         .easter-egg-close-btn:hover {
             background-color: #ff8fab;
             transform: scale(1.05);
         }
-
     </style>
 </head>
 <body>
@@ -166,16 +153,14 @@
     
     <div class="member-bubbles"></div>
 
-    <!-- 【新增】彩蛋对话框的 HTML 结构 -->
     <div id="easterEggOverlay" class="easter-egg-overlay">
         <div class="easter-egg-card">
-            <img src="https://i.postimg.cc/qR5BNcGR/kiki.png" alt="Kiki">
-            <h3>恭喜你发现了彩蛋！</h3>
-            <p>你一定是一个很有耐心的人！<br>Kiki 在这里祝你天天开心，欧气爆棚！</p>
-            <button id="closeEasterEggBtn" class="easter-egg-close-btn">朕已阅</button>
+            <img id="easterEggImage" src="" alt="彩蛋头像">
+            <h3 id="easterEggTitle"></h3>
+            <p id="easterEggContent"></p>
+            <button id="closeEasterEggBtn" class="easter-egg-close-btn"></button>
         </div>
     </div>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -183,158 +168,161 @@
             const bubbleContainer = document.querySelector('.member-bubbles');
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
-            
             const card = document.querySelector('.container');
             const cardRect = card.getBoundingClientRect();
-            
-            const safeZonePaddingHorizontal = 0.15;
-            const safeZonePaddingTop = 0.03;
-            const safeZonePaddingBottom = 0.2;
-
+            const safeZonePaddingHorizontal = 0.15, safeZonePaddingTop = 0.03, safeZonePaddingBottom = 0.2;
             const safeZoneRect = {
                 left:   cardRect.left + cardRect.width * safeZonePaddingHorizontal,
                 right:  cardRect.right - cardRect.width * safeZonePaddingHorizontal,
                 top:    cardRect.top + cardRect.height * safeZonePaddingTop,
                 bottom: cardRect.bottom - cardRect.height * safeZonePaddingBottom
             };
+            const minSize = 30, maxSize = 45;
+            const placedBubbles = [], maxAttempts = 200;
+            
+            // --- 【修复】我把这一行加回来了 ---
+            const initialBubbleCount = 600; 
 
+            // --- 彩蛋系统配置 ---
+            const STORAGE_KEY = 'jinli_diner_clicks';
+            const INDIVIDUAL_THRESHOLD = 10;
+            const GLOBAL_THRESHOLD = 50;
             const memberIcons = [
                 'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png',
-                'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', // 这是特殊泡泡
+                'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png',
                 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png',
                 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png',
                 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png',
                 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png'
             ];
-
-            const initialBubbleCount = 600; 
-            const minSize = 30;
-            const maxSize = 45;
-            const placedBubbles = []; 
-            const maxAttempts = 200;
-
-            // --- 【新增】彩蛋相关常量和变量 ---
-            const SPECIAL_ICON_URL = 'https://i.postimg.cc/qR5BNcGR/kiki.png';
-            const EASTER_EGG_KEY = 'kikiClickCount';
-            const CLICK_THRESHOLD = 7; // 点击 7 次后触发
+            const individualEasterEggs = {
+                'https://i.postimg.cc/j55dq3Pm/1.png': { owner: '粉螃蟹', title: '这里怎么有捕蟹笼！', content: '一定要狠狠鞭策这个粉螃蟹老师搬卡做美化啊好吗好的。', button: '蟹天蟹地你来啦' },
+                'https://i.postimg.cc/FKGH4Xd0/2.png': { owner: 'Marscoco', title: '被戳就这样扁扁地走开', content: '名下作品包括但不限于Mars预设/小剧场/通用美化/蒋作闻<br>诶？难道她真的是天才', button: '我真的不是m！' },
+                'https://i.postimg.cc/BvJnkn6q/3.png': { owner: '沈弥', title: '[错误429] 请求过于频繁', content: 'Ge弥ni-2.5-pro-preview-06-05-maxthinking决定截断', button: '我是弥妹' },
+                'https://i.postimg.cc/qR5BNcGR/kiki.png': { owner: 'Kiki', title: '给我买KFC吃', content: '大火热炒陈觉斐魔丸男高对抗路10+开场白热玩星露谷物语<br>请多多关心吧！！', button: '左手一只ki' },
+                'https://i.postimg.cc/t70X5XwG/image.png': { owner: '咪', title: '我一直在看着你', content: '路过请摸摸咪的耳朵<br>然后咪要继续拉磨', button: '助力咪摆脱黑奴身份' },
+                'https://i.postimg.cc/VsJnDDpK/image.png': { owner: '江江', title: '', content: '', button: '身上还背着一个小江江呀' },
+                'https://i.postimg.cc/cLBnrjtL/image.png': { owner: '汤圆', title: '', content: '', button: ' ' },
+                'https://i.postimg.cc/sfbS85Rs/image.png': { owner: '米线', title: '', content: '', button: ' ' },
+                'https://i.postimg.cc/9fXqTpyt/image.png': { owner: '小颂', title: '', content: '', button: ' ' },
+                'https://i.postimg.cc/Qx55rVX5/image.png': { owner: 'Vivi', title: '', content: '', button: ' ' },
+                'https://i.postimg.cc/XqBjdZ2g/image.png': { owner: '鸡腿子', title: '', content: '', button: ' ' },
+                'https://i.postimg.cc/vZsn8MBK/image.png': { owner: '乌鸦', title: '', content: '', button: '右手一只鸦' }
+            };
+            const globalEasterEgg = {
+                image: 'https://i.postimg.cc/zvXZTRVb/9-4-1.gif',
+                title: '泡泡终结者！',
+                content: '系统检测到你操作过于频繁<br>请聊半小时ai聊天以后再回来',
+                button: '我还能戳！'
+            };
             const easterEggOverlay = document.getElementById('easterEggOverlay');
+            const easterEggImage = document.getElementById('easterEggImage');
+            const easterEggTitle = document.getElementById('easterEggTitle');
+            const easterEggContent = document.getElementById('easterEggContent');
             const closeEasterEggBtn = document.getElementById('closeEasterEggBtn');
-
+            
 
             // --- 核心功能函数 ---
             function createBubble() {
-                let currentBubbleInfo = {};
-                let hasOverlap = true;
-                let attempts = 0;
-
+                let currentBubbleInfo = {}, hasOverlap = true, attempts = 0;
                 while (hasOverlap && attempts < maxAttempts) {
                     const size = Math.random() * (maxSize - minSize) + minSize;
                     const radius = size / 2;
-                    const x = Math.random() * (screenWidth - size);
-                    const y = Math.random() * (screenHeight - size);
-                    
-                    const isOverlappingSafeZone = (
-                        x + size > safeZoneRect.left &&
-                        x < safeZoneRect.right &&
-                        y + size > safeZoneRect.top &&
-                        y < safeZoneRect.bottom
-                    );
-
-                    if (isOverlappingSafeZone) {
-                        attempts++;
-                        continue; 
+                    const x = Math.random() * (screenWidth - size), y = Math.random() * (screenHeight - size);
+                    if (x + size > safeZoneRect.left && x < safeZoneRect.right && y + size > safeZoneRect.top && y < safeZoneRect.bottom) {
+                        attempts++; continue;
                     }
-
                     currentBubbleInfo = { id: Date.now() + Math.random(), x, y, radius };
                     hasOverlap = false;
-
                     for (const placed of placedBubbles) {
-                        const dx = currentBubbleInfo.x - placed.x;
-                        const dy = currentBubbleInfo.y - placed.y;
+                        const dx = currentBubbleInfo.x - placed.x, dy = currentBubbleInfo.y - placed.y;
                         const distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < currentBubbleInfo.radius + placed.radius + 5) {
-                            hasOverlap = true; break; 
-                        }
+                        if (distance < currentBubbleInfo.radius + placed.radius + 5) { hasOverlap = true; break; }
                     }
                     attempts++;
                 }
-                
                 if (!hasOverlap) {
-                    placedBubbles.push(currentBubbleInfo); 
-                    
+                    placedBubbles.push(currentBubbleInfo);
                     const bubble = document.createElement('div');
                     bubble.className = 'member-bubble';
-                    bubble.dataset.id = currentBubbleInfo.id; 
-
+                    bubble.dataset.id = currentBubbleInfo.id;
                     const size = currentBubbleInfo.radius * 2;
-                    bubble.style.width = `${size}px`;
-                    bubble.style.height = `${size}px`;
-                    bubble.style.left = `${currentBubbleInfo.x}px`;
-                    bubble.style.top = `${currentBubbleInfo.y}px`;
-                    
-                    // 【修改】为特殊泡泡添加 data 属性
-                    const iconUrl = memberIcons[Math.floor(Math.random() * memberIcons.length)];
-                    bubble.style.backgroundImage = `url(${iconUrl})`;
-                    if (iconUrl === SPECIAL_ICON_URL) {
-                        bubble.dataset.isSpecial = 'true';
-                    }
-                    
+                    bubble.style.width = `${size}px`; bubble.style.height = `${size}px`;
+                    bubble.style.left = `${currentBubbleInfo.x}px`; bubble.style.top = `${currentBubbleInfo.y}px`;
+                    bubble.style.backgroundImage = `url(${memberIcons[Math.floor(Math.random() * memberIcons.length)]})`;
                     bubble.style.animationDuration = `${Math.random() * 4 + 6}s`;
                     bubble.style.animationDelay = `-${Math.random() * 5}s`;
-                    
                     bubbleContainer.appendChild(bubble);
                     setTimeout(() => { bubble.style.opacity = '0.9'; }, 50);
                 }
             }
-            
+
+            // --- 彩蛋相关的函数 ---
+            function getClickData() {
+                const data = localStorage.getItem(STORAGE_KEY);
+                try {
+                    return data ? JSON.parse(data) : { global: 0, individuals: {} };
+                } catch (e) {
+                    return { global: 0, individuals: {} };
+                }
+            }
+            function saveClickData(data) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            }
+            function showEasterEgg(data) {
+                easterEggImage.src = data.image;
+                easterEggTitle.innerHTML = data.title;
+                easterEggContent.innerHTML = data.content;
+                closeEasterEggBtn.innerHTML = data.button;
+                easterEggOverlay.style.display = 'flex';
+            }
+
             // --- 事件委托处理泡泡点击 ---
             bubbleContainer.addEventListener('click', function(event) {
                 const clickedBubble = event.target.closest('.member-bubble');
                 if (!clickedBubble || clickedBubble.classList.contains('popping-out')) return;
 
-                // --- 【新增】处理彩蛋逻辑 ---
-                if (clickedBubble.dataset.isSpecial === 'true') {
-                    handleSpecialBubbleClick();
-                }
+                const style = window.getComputedStyle(clickedBubble);
+                const rawUrl = style.backgroundImage.slice(5, -2);
+                const clickData = getClickData();
+                clickData.global++;
+                clickData.individuals[rawUrl] = (clickData.individuals[rawUrl] || 0) + 1;
+                console.log(`总点击: ${clickData.global}, ${individualEasterEggs[rawUrl]?.owner || '未知'} 点击: ${clickData.individuals[rawUrl]}`);
 
-                // --- 原有的泡泡消失和再生逻辑 ---
+                let triggered = false;
+                if (clickData.individuals[rawUrl] >= INDIVIDUAL_THRESHOLD) {
+                    const eggInfo = individualEasterEggs[rawUrl];
+                    if (eggInfo) {
+                        triggered = true;
+                        const displayData = {
+                            image: rawUrl,
+                            title: eggInfo.title || `你发现了 ${eggInfo.owner} 的秘密！`,
+                            content: eggInfo.content || '继续探索，看看还能发现什么吧！',
+                            button: eggInfo.button.trim() || '好耶！'
+                        };
+                        showEasterEgg(displayData);
+                        clickData.individuals[rawUrl] = 0;
+                    }
+                } 
+                if (!triggered && clickData.global >= GLOBAL_THRESHOLD) {
+                    showEasterEgg(globalEasterEgg);
+                    clickData.global = 0;
+                }
+                saveClickData(clickData);
                 const bubbleId = parseFloat(clickedBubble.dataset.id);
                 const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
-                if (indexToRemove > -1) {
-                    placedBubbles.splice(indexToRemove, 1);
-                }
-
+                if (indexToRemove > -1) { placedBubbles.splice(indexToRemove, 1); }
                 clickedBubble.classList.add('popping-out');
-                
                 setTimeout(() => {
                     clickedBubble.remove();
                     createBubble();
                 }, 300);
             });
 
-            // --- 【新增】彩蛋点击处理函数 ---
-            function handleSpecialBubbleClick() {
-                // 从 localStorage 读取当前点击次数，如果不存在则为 0
-                let currentClicks = parseInt(localStorage.getItem(EASTER_EGG_KEY)) || 0;
-                currentClicks++;
-
-                console.log(`Kiki's bubble clicked! Count: ${currentClicks}`); // 可以在控制台看到计数变化
-
-                if (currentClicks >= CLICK_THRESHOLD) {
-                    // 达到阈值，显示彩蛋并重置计数器
-                    easterEggOverlay.style.display = 'flex';
-                    localStorage.setItem(EASTER_EGG_KEY, 0); 
-                } else {
-                    // 未达到阈值，更新 localStorage 中的计数值
-                    localStorage.setItem(EASTER_EGG_KEY, currentClicks);
-                }
-            }
-
-            // --- 【新增】关闭彩蛋卡片的事件监听 ---
+            // --- 关闭彩蛋卡片的事件监听 ---
             closeEasterEggBtn.addEventListener('click', () => {
                 easterEggOverlay.style.display = 'none';
             });
-            // 也允许点击蒙层背景关闭
             easterEggOverlay.addEventListener('click', (event) => {
                 if (event.target === easterEggOverlay) {
                     easterEggOverlay.style.display = 'none';
