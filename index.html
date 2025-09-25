@@ -55,7 +55,6 @@
             from { opacity: 0; transform: translateY(20px) scale(0.98); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        /* ... 其他所有 CSS 规则保持不变 ... */
         .logo { width: 100px; height: 100px; margin: 0 auto 15px auto; border-radius: 50%; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 0 20px rgba(168, 85, 247, 0.6); }
         .logo:hover { transform: scale(1.1) rotate(5deg); box-shadow: 0 0 35px rgba(168, 85, 247, 0.9); }
         h1 { font-size: 2.5rem; margin: 0 0 20px 0; font-family: "Fusion Pixel 10px M zh_hans", sans-serif; font-weight: normal; background: linear-gradient(45deg, #f089d7, #5784f1); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 3px 3px 0px rgba(88, 28, 135, 0.3); }
@@ -74,6 +73,72 @@
         .platform-item-1 { background-color: #a0e9ff; }
         .platform-item-2 { background-color: #dcb4f5; }
         .platform-item-3 { background-color: #ffafcc; }
+
+        /* --- 【新增】彩蛋卡片的 CSS 样式 --- */
+        .easter-egg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: none; /* 默认隐藏 */
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .easter-egg-card {
+            background-color: #fff;
+            border-radius: 16px;
+            padding: 25px 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 320px;
+            width: 90%;
+            position: relative;
+        }
+
+        .easter-egg-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #ffafcc;
+        }
+
+        .easter-egg-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .easter-egg-card p {
+            margin: 0 0 20px;
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .easter-egg-close-btn {
+            background-color: #ffafcc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .easter-egg-close-btn:hover {
+            background-color: #ff8fab;
+            transform: scale(1.05);
+        }
+
     </style>
 </head>
 <body>
@@ -101,6 +166,17 @@
     
     <div class="member-bubbles"></div>
 
+    <!-- 【新增】彩蛋对话框的 HTML 结构 -->
+    <div id="easterEggOverlay" class="easter-egg-overlay">
+        <div class="easter-egg-card">
+            <img src="https://i.postimg.cc/qR5BNcGR/kiki.png" alt="Kiki">
+            <h3>恭喜你发现了彩蛋！</h3>
+            <p>你一定是一个很有耐心的人！<br>Kiki 在这里祝你天天开心，欧气爆棚！</p>
+            <button id="closeEasterEggBtn" class="easter-egg-close-btn">朕已阅</button>
+        </div>
+    </div>
+
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- 全局变量和常量 ---
@@ -111,12 +187,10 @@
             const card = document.querySelector('.container');
             const cardRect = card.getBoundingClientRect();
             
-            // 【修改】定义卡片中心“安全区域”的独立边距比例
-            const safeZonePaddingHorizontal = 0.15; // 左右边距各占卡片宽度的 20%
-            const safeZonePaddingTop = 0.03;        // 顶部边距占卡片高度的 30%
-            const safeZonePaddingBottom = 0.2;     // 底部边距占卡片高度的 20%
+            const safeZonePaddingHorizontal = 0.15;
+            const safeZonePaddingTop = 0.03;
+            const safeZonePaddingBottom = 0.2;
 
-            // 【修改】根据独立边距计算安全区域
             const safeZoneRect = {
                 left:   cardRect.left + cardRect.width * safeZonePaddingHorizontal,
                 right:  cardRect.right - cardRect.width * safeZonePaddingHorizontal,
@@ -126,7 +200,7 @@
 
             const memberIcons = [
                 'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png',
-                'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png',
+                'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', // 这是特殊泡泡
                 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png',
                 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png',
                 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png',
@@ -139,7 +213,15 @@
             const placedBubbles = []; 
             const maxAttempts = 200;
 
-            // --- 核心功能函数（内部逻辑无改动） ---
+            // --- 【新增】彩蛋相关常量和变量 ---
+            const SPECIAL_ICON_URL = 'https://i.postimg.cc/qR5BNcGR/kiki.png';
+            const EASTER_EGG_KEY = 'kikiClickCount';
+            const CLICK_THRESHOLD = 7; // 点击 7 次后触发
+            const easterEggOverlay = document.getElementById('easterEggOverlay');
+            const closeEasterEggBtn = document.getElementById('closeEasterEggBtn');
+
+
+            // --- 核心功能函数 ---
             function createBubble() {
                 let currentBubbleInfo = {};
                 let hasOverlap = true;
@@ -189,7 +271,14 @@
                     bubble.style.height = `${size}px`;
                     bubble.style.left = `${currentBubbleInfo.x}px`;
                     bubble.style.top = `${currentBubbleInfo.y}px`;
-                    bubble.style.backgroundImage = `url(${memberIcons[Math.floor(Math.random() * memberIcons.length)]})`;
+                    
+                    // 【修改】为特殊泡泡添加 data 属性
+                    const iconUrl = memberIcons[Math.floor(Math.random() * memberIcons.length)];
+                    bubble.style.backgroundImage = `url(${iconUrl})`;
+                    if (iconUrl === SPECIAL_ICON_URL) {
+                        bubble.dataset.isSpecial = 'true';
+                    }
+                    
                     bubble.style.animationDuration = `${Math.random() * 4 + 6}s`;
                     bubble.style.animationDelay = `-${Math.random() * 5}s`;
                     
@@ -198,11 +287,17 @@
                 }
             }
             
-            // --- 事件委托处理泡泡点击（无改动） ---
+            // --- 事件委托处理泡泡点击 ---
             bubbleContainer.addEventListener('click', function(event) {
                 const clickedBubble = event.target.closest('.member-bubble');
                 if (!clickedBubble || clickedBubble.classList.contains('popping-out')) return;
 
+                // --- 【新增】处理彩蛋逻辑 ---
+                if (clickedBubble.dataset.isSpecial === 'true') {
+                    handleSpecialBubbleClick();
+                }
+
+                // --- 原有的泡泡消失和再生逻辑 ---
                 const bubbleId = parseFloat(clickedBubble.dataset.id);
                 const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
                 if (indexToRemove > -1) {
@@ -217,7 +312,36 @@
                 }, 300);
             });
 
-            // --- 初始化（无改动） ---
+            // --- 【新增】彩蛋点击处理函数 ---
+            function handleSpecialBubbleClick() {
+                // 从 localStorage 读取当前点击次数，如果不存在则为 0
+                let currentClicks = parseInt(localStorage.getItem(EASTER_EGG_KEY)) || 0;
+                currentClicks++;
+
+                console.log(`Kiki's bubble clicked! Count: ${currentClicks}`); // 可以在控制台看到计数变化
+
+                if (currentClicks >= CLICK_THRESHOLD) {
+                    // 达到阈值，显示彩蛋并重置计数器
+                    easterEggOverlay.style.display = 'flex';
+                    localStorage.setItem(EASTER_EGG_KEY, 0); 
+                } else {
+                    // 未达到阈值，更新 localStorage 中的计数值
+                    localStorage.setItem(EASTER_EGG_KEY, currentClicks);
+                }
+            }
+
+            // --- 【新增】关闭彩蛋卡片的事件监听 ---
+            closeEasterEggBtn.addEventListener('click', () => {
+                easterEggOverlay.style.display = 'none';
+            });
+            // 也允许点击蒙层背景关闭
+            easterEggOverlay.addEventListener('click', (event) => {
+                if (event.target === easterEggOverlay) {
+                    easterEggOverlay.style.display = 'none';
+                }
+            });
+
+            // --- 初始化 ---
             for (let i = 0; i < initialBubbleCount; i++) {
                 createBubble();
             }
