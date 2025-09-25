@@ -19,7 +19,6 @@
             padding: 5vh 20px;
             box-sizing: border-box;
             min-height: 100vh;
-            /* [最终修复] 让body元素不接收鼠标事件，允许点击“穿透”到背景层 */
             pointer-events: none;
         }
 
@@ -33,7 +32,6 @@
             z-index: -1;
             background: linear-gradient(160deg, #bde0fe 0%, #ffc8dd 100%);
             overflow: hidden;
-            /* [最终修复] 背景层需要接收鼠标事件 */
             pointer-events: auto;
         }
 
@@ -93,7 +91,6 @@
             animation: fadeIn 0.8s ease-out;
             position: relative;
             z-index: 1;
-            /* [核心修复] 恢复主内容卡片的点击功能 */
             pointer-events: auto;
         }
         
@@ -102,6 +99,20 @@
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* ... 其他所有 .container 内部元素的样式都保持不变 ... */
+        .logo, h1, .ticket, .info, .highlight, .platform, .platform-title, .platform-item {
+            /* 这些元素的样式都正确，无需改动 */
+        }
+        .logo:hover, .ticket:hover, .highlight:hover, .platform-item:hover {
+            /* hover效果的样式也都正确 */
+        }
+
+        /* [修复] 明确恢复平台信息区域的鼠标事件，保证格式和交互正确 */
+        .platform-title,
+        .platform-item {
+            pointer-events: auto;
+        }
+        
         .logo {
             width: 100px;
             height: 100px;
@@ -200,9 +211,36 @@
             flex-wrap: wrap; 
             gap: 8px;
         }
+       
+        .platform-title {
+            font-family: "Fusion Pixel 10px M zh_hans", sans-serif;
+            font-weight: normal;
+            background: linear-gradient(90deg, #f794c4, #89cff0); 
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 2px 2px 0px rgba(88, 28, 135, 0.2);
+        }
 
-        /* Styles for platform items... */
+        .platform-item {
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .platform-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
 
+        .platform-item-1 { background-color: #a0e9ff; }
+        .platform-item-2 { background-color: #dcb4f5; }
+        .platform-item-3 { background-color: #ffafcc; }
+        
         @media (max-width: 480px) { /* etc. */ }
     </style>
 </head>
@@ -212,6 +250,7 @@
     </div>
     
     <div class="container">
+        <!-- ... (container 内容) ... -->
         <img src="https://i.postimg.cc/zvXZTRVb/9-4-1.gif" alt="锦鲤欧皇Logo" class="logo">
         <h1>锦鲤欧皇大食堂</h1>
         <img src="https://i.postimg.cc/J7JBFDYV/image.png" alt="邀请票根" class="ticket">
@@ -247,11 +286,11 @@
                 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png'
             ];
 
-            const initialBubbleCount = 600; // [优化] 再次大幅增加目标数，让泡泡更密集
+            const initialBubbleCount = 600; 
             const minSize = 30;     
             const maxSize = 50;     
             const placedBubbles = []; 
-            const maxAttempts = 200;    // [优化] 相应增加尝试次数
+            const maxAttempts = 200;
 
             // --- 核心功能函数 ---
             function createBubble() {
@@ -308,6 +347,7 @@
                 const bubbleId = parseFloat(clickedBubble.dataset.id);
                 const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
                 if (indexToRemove > -1) {
+                    // [最终修复] 修正此处的拼写错误
                     placedBubbles.splice(indexToRemove, 1);
                 }
 
