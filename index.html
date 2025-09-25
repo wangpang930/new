@@ -33,7 +33,7 @@
             overflow: hidden;
         }
 
-        /* --- 动态成员泡泡 --- */
+        /* --- 泡泡容器 --- */
         .member-bubbles {
             position: absolute;
             top: 0;
@@ -41,38 +41,42 @@
             width: 100%;
             height: 100%;
         }
-
-        /* [修改] 调整了泡泡的样式以完整显示图片 */
+        
         .member-bubble {
             position: absolute;
-            bottom: -150px;
             border-radius: 50%;
-            background-size: contain; /* [修改] 从 cover 改为 contain，确保图片完整显示 */
-            background-repeat: no-repeat; /* [新增] 防止图片平铺 */
+            background-size: contain; 
+            background-repeat: no-repeat;
             background-position: center;
-            background-color: rgba(255, 255, 255, 0.2); /* [新增] 为留白区域增加一个半透明底色 */
+            background-color: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             animation-iteration-count: infinite;
-            animation-timing-function: linear;
+            animation-timing-function: ease-in-out;
+            opacity: 0; 
+            transition: opacity 0.5s ease;
+            cursor: pointer; /* [新增] 提示用户泡泡可点击 */
         }
         
-        @keyframes floatAndSwing {
-            0% { transform: translateY(0) translateX(0px) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.8; }
-            50% { transform: translateY(-50vh) translateX(20px) rotate(10deg); }
-            90% { opacity: 0.8; }
-            100% { transform: translateY(-110vh) translateX(-20px) rotate(-15deg); opacity: 0; }
+        @keyframes wobble {
+            0%   { transform: translate(0, 0) rotate(-1deg); }
+            25%  { transform: translate(1px, -1px) rotate(0deg); }
+            50%  { transform: translate(0, 0) rotate(1deg); }
+            75%  { transform: translate(-1px, 1px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(-1deg); }
         }
 
-        @keyframes floatAndSwing2 {
-            0% { transform: translateY(0) translateX(0px) rotate(0deg); opacity: 0; }
-            10% { opacity: 0.8; }
-            50% { transform: translateY(-60vh) translateX(-30px) rotate(-12deg); }
-            90% { opacity: 0.8; }
-            100% { transform: translateY(-110vh) translateX(10px) rotate(20deg); opacity: 0; }
+        /* [新增] 点击泡泡后的消失动画 */
+        @keyframes pop-out {
+            from {
+                transform: scale(1);
+                opacity: 0.9;
+            }
+            to {
+                transform: scale(0);
+                opacity: 0;
+            }
         }
-
 
         /* --- 主容器卡片 --- */
         .container {
@@ -122,15 +126,9 @@
         }
 
         @keyframes ticketFloat {
-            0% {
-                transform: translateY(0px) rotate(-1deg);
-            }
-            50% {
-                transform: translateY(-8px) rotate(1deg);
-            }
-            100% {
-                transform: translateY(0px) rotate(-1deg);
-            }
+            0%   { transform: translateY(0px) rotate(-1deg); }
+            50%  { transform: translateY(-8px) rotate(1deg); }
+            100% { transform: translateY(0px) rotate(-1deg); }
         }
 
         .ticket {
@@ -198,7 +196,6 @@
             animation-delay: 2s;
         }
         
-        /* --- 平台信息区域 --- */
         .platform {
             padding: 15px;
             border-radius: 10px;
@@ -243,9 +240,7 @@
         .platform-item-3 { background-color: #ffafcc; }
         
         @media (max-width: 480px) {
-            body, html {
-                padding: 20px;
-            }
+            body, html { padding: 20px; }
             .container { padding: 25px 20px; }
             h1 { font-size: 2rem; }
             .info { font-size: 0.95rem; }
@@ -278,50 +273,118 @@
         </div>
     </div>
 
+    <!-- [修改] JavaScript 逻辑重构以支持点击交互 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- 全局变量和常量 ---
             const bubbleContainer = document.querySelector('.member-bubbles');
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
             
             const memberIcons = [
-                'https://i.postimg.cc/j55dq3Pm/1.png',      // 螃蟹
-                'https://i.postimg.cc/FKGH4Xd0/2.png',      // m老师
-                'https://i.postimg.cc/BvJnkn6q/3.png',      // 弥
-                'https://i.postimg.cc/qR5BNcGR/kiki.png',   // kiki
-                'https://i.postimg.cc/t70X5XwG/image.png',  // 咪
-                'https://i.postimg.cc/VsJnDDpK/image.png',  // 江
-                'https://i.postimg.cc/cLBnrjtL/image.png',  // 汤圆
-                'https://i.postimg.cc/sfbS85Rs/image.png',  // 米线
-                'https://i.postimg.cc/9fXqTpyt/image.png',  // 颂
-                'https://i.postimg.cc/Qx55rVX5/image.png',  // 鲨鱼
-                'https://i.postimg.cc/XqBjdZ2g/image.png',  // 鸡腿
-                'https://i.postimg.cc/vZsn8MBK/image.png'   // 鸦鸦
+                'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png',
+                'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png',
+                'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png',
+                'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png',
+                'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png',
+                'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png'
             ];
 
-            const bubbleCount = 40; 
+            const initialBubbleCount = 150; 
+            const minSize = 30;     
+            const maxSize = 50;     
+            const placedBubbles = []; 
+            const maxAttempts = 50;   
 
-            for (let i = 0; i < bubbleCount; i++) {
-                const bubble = document.createElement('div');
-                bubble.className = 'member-bubble';
+            // --- 核心功能函数 ---
 
-                const randomIconUrl = memberIcons[Math.floor(Math.random() * memberIcons.length)];
-                bubble.style.backgroundImage = `url(${randomIconUrl})`;
+            /**
+             * 创建并放置一个泡泡到屏幕上
+             */
+            function createBubble() {
+                let currentBubbleInfo = {};
+                let hasOverlap = true;
+                let attempts = 0;
 
-                const size = Math.random() * 45 + 40;
-                bubble.style.width = `${size}px`;
-                bubble.style.height = `${size}px`;
+                while (hasOverlap && attempts < maxAttempts) {
+                    const size = Math.random() * (maxSize - minSize) + minSize;
+                    const radius = size / 2;
+                    const x = Math.random() * (screenWidth - size);
+                    const y = Math.random() * (screenHeight - size);
+                    
+                    currentBubbleInfo = { id: Date.now() + Math.random(), x, y, radius }; // 用唯一ID方便后续查找
+                    hasOverlap = false;
 
-                bubble.style.left = `${Math.random() * 100}%`;
-
-                const duration = Math.random() * 20 + 15;
-                bubble.style.animationDuration = `${duration}s`;
-
-                const delay = Math.random() * 15;
-                bubble.style.animationDelay = `${delay}s`;
+                    for (const placed of placedBubbles) {
+                        const dx = currentBubbleInfo.x - placed.x;
+                        const dy = currentBubbleInfo.y - placed.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < currentBubbleInfo.radius + placed.radius + 5) {
+                            hasOverlap = true;
+                            break; 
+                        }
+                    }
+                    attempts++;
+                }
                 
-                const animationName = Math.random() > 0.5 ? 'floatAndSwing' : 'floatAndSwing2';
-                bubble.style.animationName = animationName;
+                if (!hasOverlap) {
+                    placedBubbles.push(currentBubbleInfo); 
+                    
+                    const bubble = document.createElement('div');
+                    bubble.className = 'member-bubble';
+                    bubble.dataset.id = currentBubbleInfo.id; // 将ID存入DOM元素
 
-                bubbleContainer.appendChild(bubble);
+                    const size = currentBubbleInfo.radius * 2;
+                    bubble.style.width = `${size}px`;
+                    bubble.style.height = `${size}px`;
+                    bubble.style.left = `${currentBubbleInfo.x}px`;
+                    bubble.style.top = `${currentBubbleInfo.y}px`;
+                    bubble.style.backgroundImage = `url(${memberIcons[Math.floor(Math.random() * memberIcons.length)]})`;
+                    bubble.style.animationName = 'wobble';
+                    bubble.style.animationDuration = `${Math.random() * 4 + 4}s`;
+                    bubble.style.animationDelay = `${Math.random() * 2}s`;
+                    
+                    // [新增] 添加点击事件监听
+                    bubble.addEventListener('click', handleBubbleClick);
+
+                    bubbleContainer.appendChild(bubble);
+                    
+                    setTimeout(() => { bubble.style.opacity = '0.9'; }, 100);
+                }
+            }
+
+            /**
+             * 处理泡泡点击事件的函数
+             * @param {Event} event 
+             */
+            function handleBubbleClick(event) {
+                const clickedBubble = event.currentTarget;
+                
+                // 1. 移除事件监听，防止重复点击
+                clickedBubble.removeEventListener('click', handleBubbleClick);
+                clickedBubble.style.cursor = 'default'; // 恢复默认鼠标样式
+
+                // 2. 从已放置泡泡数组中移除该泡泡的数据
+                const bubbleId = parseFloat(clickedBubble.dataset.id);
+                const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
+                if (indexToRemove > -1) {
+                    placedBubbles.splice(indexToRemove, 1);
+                }
+
+                // 3. 播放消失动画
+                clickedBubble.style.animation = 'pop-out 0.3s ease-out forwards';
+                
+                // 4. 动画结束后移除DOM并生成新泡泡
+                clickedBubble.addEventListener('animationend', () => {
+                    clickedBubble.remove();
+                    createBubble(); // 生成一个新的来补充
+                }, { once: true }); // 事件只触发一次
+            }
+
+
+            // --- 初始化 ---
+            for (let i = 0; i < initialBubbleCount; i++) {
+                createBubble();
             }
         });
     </script>
