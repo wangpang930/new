@@ -135,7 +135,7 @@
     <div class="fixed-background"></div>
     <div class="container">
         <img src="https://i.postimg.cc/zvXZTRVb/9-4-1.gif" alt="锦鲤欧皇Logo" class="logo">
-        <h1>欧皇锦鲤<br>食堂</h1>
+        <h1>欧皇锦鲤食堂</h1>
         <img src="https://i.postimg.cc/J7JBFDYV/image.png" alt="邀请票根" class="ticket">
         <div class="info">
             <p> 邀请朋友来玩，请指路<br> <span class="highlight">小红书</span> 搜索 <span class="highlight">「一条小锦鲤」</span><br> 进入主页找到审核群 </p>
@@ -177,12 +177,20 @@
                 top:    cardRect.top + cardRect.height * safeZonePaddingTop,
                 bottom: cardRect.bottom - cardRect.height * safeZonePaddingBottom
             };
-            const minSize = 30, maxSize = 45;
             const placedBubbles = [], maxAttempts = 200;
 
-            // 【已修改】根据屏幕大小动态计算泡泡数量，以适应不同设备
-            // 这个值越小，泡泡就越密集。可以根据需要在 3000 到 5000 之间调整。
-            const bubbleDensity = 3500; 
+            // 【已修改】根据屏幕宽度动态调整泡泡大小
+            let minSize, maxSize;
+            if (screenWidth < 768) { // 手机或小屏幕
+                minSize = 25;
+                maxSize = 35;
+            } else { // 电脑大屏幕
+                minSize = 40;
+                maxSize = 55;
+            }
+
+            // 【已修改】调整了密度值，值越小泡泡越多，以适应更小的泡泡尺寸
+            const bubbleDensity = 3000; 
             const initialBubbleCount = Math.floor((screenWidth * screenHeight) / bubbleDensity);
 
             const STORAGE_KEY = 'jinli_diner_clicks';
@@ -225,6 +233,7 @@
             function createBubble() { 
                 let currentBubbleInfo = {}, hasOverlap = true, attempts = 0; 
                 while (hasOverlap && attempts < maxAttempts) { 
+                    // 使用动态计算出的 minSize 和 maxSize
                     const size = Math.random() * (maxSize - minSize) + minSize; 
                     const radius = size / 2; 
                     const x = Math.random() * (screenWidth - size), y = Math.random() * (screenHeight - size); 
