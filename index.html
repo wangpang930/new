@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>锦鲤欧皇大食堂 - 对对碰</title>
+    <title>锦鲤欧皇<br>食堂 </title>
     <style>
-        /* CSS 部分有修改 */
+        /* CSS 部分无需修改 */
         @import url("https://fontsapi.zeoseven.com/568/main/result.css");
         body, html {
             margin: 0; padding: 0; width: 100%;
@@ -35,13 +35,11 @@
             pointer-events: auto;
         }
         
-        /* 【新增】选中泡泡的样式 */
         .member-bubble.selected-bubble {
             transform: scale(1.15);
             box-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 105, 180, 0.8);
             border-color: rgba(255, 105, 180, 0.8);
         }
-        /* 【新增】匹配失败的晃动动画 */
         @keyframes mismatch-shake {
             0%, 100% { transform: translateX(0) scale(1.1); }
             25% { transform: translateX(-6px) scale(1.1); }
@@ -140,7 +138,7 @@
         <h1>锦鲤欧皇大食堂</h1>
         <img src="https://i.postimg.cc/J7JBFDYV/image.png" alt="邀请票根" class="ticket">
         <div class="info">
-            <p> 邀请朋友来玩，请指路<br> <span class="highlight">小红书</span> 搜索 <span class="highlight">「一条小锦鲤」</span><br> 主页进入审核群 </p>
+            <p> 邀请朋友来玩，请指路<br> <span class="highlight">小红书</span> 搜索 <span class="highlight">「一条小锦鲤」</span><br> 进入主页找到审核群 </p>
         </div>
         <div class="platform">
             <span class="platform-title">全平台airp社区：</span>
@@ -159,7 +157,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT 部分已完全重写 -->
+    <!-- SCRIPT 部分已修改 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const bubbleContainer = document.querySelector('.member-bubbles');
@@ -183,17 +181,33 @@
             const placedBubbles = [], maxAttempts = 200;
             const initialBubbleCount = 600; 
             const STORAGE_KEY = 'jinli_diner_clicks';
-            const INDIVIDUAL_THRESHOLD = 5; // 降低彩蛋触发阈值，因为匹配更难
-            const GLOBAL_THRESHOLD = 25;    // 同上
+            // 【修改】个人彩蛋触发阈值为5次
+            const INDIVIDUAL_THRESHOLD = 5;
+            const GLOBAL_THRESHOLD = 25;
 
             const memberIcons = [
                 'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png', 'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png', 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png', 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png', 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png', 'https://i.postimg.cc/fWVf2gsk/nerd.png', 'https://i.postimg.cc/t70T2gjd/cloud-1.png'
             ];
+            
+            // 【修改】新增两个个人彩蛋
             const individualEasterEggs = {
-                'https://i.postimg.cc/j55dq3Pm/1.png': { owner: '粉螃蟹', title: '这里怎么有捕蟹笼！', content: '一定要狠狠鞭策这个粉螃蟹老师搬卡做美化啊好吗好的。', button: '蟹天蟹地你来啦' }, 'https://i.postimg.cc/FKGH4Xd0/2.png': { owner: 'Marscoco', title: '被戳就这样扁扁地走开', content: '名下作品包括但不限于Mars预设/小剧场/通用美化/蒋作闻<br>诶？难道她真的是天才', button: '我真的不是m！' }, 'https://i.postimg.cc/BvJnkn6q/3.png': { owner: '沈弥', title: '[错误429] 请求过于频繁', content: 'Ge弥ni-2.5-pro-preview-06-05-maxthinking决定截断', button: '我是弥妹' }, 'https://i.postimg.cc/qR5BNcGR/kiki.png': { owner: 'Kiki', title: '给我买KFC吃', content: '大火热炒陈觉斐魔丸男高对抗路10+开场白热玩星露谷物语<br>请多多关心吧！！', button: '左手一只ki' }, 'https://i.postimg.cc/t70X5XwG/image.png': { owner: '咪', title: '我一直在看着你', content: '路过请摸摸咪的耳朵<br>然后咪要继续拉磨', button: '助力咪摆脱黑奴身份' }, 'https://i.postimg.cc/VsJnDDpK/image.png': { owner: '江江', title: '', content: '', button: '身上还背着一个小江江呀' }, 'https://i.postimg.cc/cLBnrjtL/image.png': { owner: '汤圆', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/sfbS85Rs/image.png': { owner: '米线', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/9fXqTpyt/image.png': { owner: '小颂', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/Qx55rVX5/image.png': { owner: 'Vivi', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/XqBjdZ2g/image.png': { owner: '鸡腿子', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/vZsn8MBK/image.png': { owner: '乌鸦', title: '', content: '', button: '右手一只鸦' }
+                'https://i.postimg.cc/j55dq3Pm/1.png': { owner: '粉螃蟹', title: '这里怎么有捕蟹笼！', content: '一定要狠狠鞭策这个粉螃蟹老师搬卡做美化啊好吗好的。', button: '蟹天蟹地你来啦' }, 
+                'https://i.postimg.cc/FKGH4Xd0/2.png': { owner: 'Marscoco', title: '被戳就这样扁扁地走开', content: '名下作品包括但不限于Mars预设/小剧场/通用美化/蒋作闻<br>诶？难道她真的是天才', button: '我真的不是m！' }, 
+                'https://i.postimg.cc/BvJnkn6q/3.png': { owner: '沈弥', title: '[错误429] 请求过于频繁', content: 'Ge弥ni-2.5-pro-preview-06-05-maxthinking决定截断', button: '我是弥妹' }, 
+                'https://i.postimg.cc/qR5BNcGR/kiki.png': { owner: 'Kiki', title: '给我买KFC吃', content: '大火热炒陈觉斐魔丸男高对抗路10+开场白热玩星露谷物语<br>请多多关心吧！！', button: '左手一只ki' }, 
+                'https://i.postimg.cc/t70X5XwG/image.png': { owner: '咪', title: '我一直在看着你', content: '路过请摸摸咪的耳朵<br>然后咪要继续拉磨', button: '助力咪摆脱黑奴身份' }, 
+                'https://i.postimg.cc/VsJnDDpK/image.png': { owner: '江江', title: '', content: '', button: '身上还背着一个小江江呀' }, 
+                'https://i.postimg.cc/cLBnrjtL/image.png': { owner: '汤圆', title: '', content: '', button: ' ' }, 
+                'https://i.postimg.cc/sfbS85Rs/image.png': { owner: '米线', title: '', content: '', button: ' ' }, 
+                'https://i.postimg.cc/9fXqTpyt/image.png': { owner: '小颂', title: '', content: '', button: ' ' }, 
+                'https://i.postimg.cc/Qx55rVX5/image.png': { owner: 'Vivi', title: '', content: '', button: ' ' }, 
+                'https://i.postimg.cc/XqBjdZ2g/image.png': { owner: '鸡腿子', title: '', content: '', button: ' ' }, 
+                'https://i.postimg.cc/vZsn8MBK/image.png': { owner: '乌鸦', title: '', content: '', button: '右手一只鸦' },
+                'https://i.postimg.cc/fWVf2gsk/nerd.png': { owner: '小书呆', title: '呃...其实...', content: '我只是路过，没想到被你这个学霸连续配对成功了！', button: '放过我吧！' },
+                'https://i.postimg.cc/t70T2gjd/cloud-1.png': { owner: '小云朵', title: '轻飘飘~', content: '你好呀！被你找到了，感觉像在天上飞一样开心~', button: '摸摸云' }
             };
             const globalEasterEgg = {
-                image: 'https://i.postimg.cc/zvXZTRVb/9-4-1.gif', title: '泡泡终结者！', content: '系统检测到你操作过于频繁<br>请聊半小时ai聊天以后再回来', button: '我还能戳！'
+                image: 'https://i.postimg.cc/zvXZTRVb/9-4-1.gif', title: '泡泡终结者！', content: '你太厉害了，休息一下吧！<br>或者去跟朋友们聊聊天？', button: '我还能玩！'
             };
             
             // DOM 元素
@@ -261,7 +275,6 @@
                 easterEggOverlay.style.display = 'flex'; 
             }
 
-            // 泡泡消除函数，消除后会生成新的补位
             function popBubble(bubble) {
                 const bubbleId = parseFloat(bubble.dataset.id);
                 const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
@@ -271,7 +284,7 @@
                 bubble.classList.add('popping-out');
                 setTimeout(() => {
                     bubble.remove();
-                    createBubble(); // 补位
+                    createBubble();
                 }, 300);
             }
 
@@ -281,16 +294,12 @@
                 const clickedBubble = event.target.closest('.member-bubble');
                 if (!clickedBubble || clickedBubble.classList.contains('popping-out')) return;
 
-                // --- 对对碰逻辑 ---
                 if (!firstSelection) {
-                    // 1. 这是第一次点击
                     firstSelection = clickedBubble;
                     firstSelection.classList.add('selected-bubble');
                 } else {
-                    // 2. 这是第二次点击，进行匹配
                     const secondSelection = clickedBubble;
                     
-                    // 如果点的是同一个，则取消选择
                     if (firstSelection === secondSelection) {
                         firstSelection.classList.remove('selected-bubble');
                         firstSelection = null;
@@ -301,17 +310,14 @@
                     const secondUrl = secondSelection.style.backgroundImage;
 
                     if (firstUrl === secondUrl) {
-                        // 2a. 匹配成功！
                         firstSelection.classList.remove('selected-bubble');
                         
-                        // 触发消除
                         popBubble(firstSelection);
                         popBubble(secondSelection);
 
-                        // --- 匹配成功，在这里计算彩蛋 ---
                         const clickData = getClickData();
                         clickData.global++;
-                        const rawUrl = firstUrl.slice(5, -2); // 获取干净的URL
+                        const rawUrl = firstUrl.slice(5, -2);
                         clickData.individuals[rawUrl] = (clickData.individuals[rawUrl] || 0) + 1;
                         console.log(`匹配成功! 总匹配: ${clickData.global}, ${individualEasterEggs[rawUrl]?.owner || '未知'} 匹配: ${clickData.individuals[rawUrl]}`);
                         
@@ -322,21 +328,18 @@
                                 triggered = true;
                                 const displayData = { image: rawUrl, title: eggInfo.title || `你发现了 ${eggInfo.owner} 的秘密！`, content: eggInfo.content || '继续探索，看看还能发现什么吧！', button: eggInfo.button.trim() || '好耶！' };
                                 showEasterEgg(displayData);
-                                clickData.individuals[rawUrl] = 0; // 重置计数
+                                clickData.individuals[rawUrl] = 0;
                             }
                         }
                         if (!triggered && clickData.global >= GLOBAL_THRESHOLD) {
                             showEasterEgg(globalEasterEgg);
-                            clickData.global = 0; // 重置计数
+                            clickData.global = 0;
                         }
                         saveClickData(clickData);
-                        // --- 彩蛋逻辑结束 ---
 
                     } else {
-                        // 2b. 匹配失败
                         firstSelection.classList.remove('selected-bubble');
                         
-                        // 添加短暂的晃动效果
                         firstSelection.classList.add('mismatch');
                         secondSelection.classList.add('mismatch');
                         setTimeout(() => {
@@ -345,7 +348,6 @@
                         }, 300);
                     }
                     
-                    // 无论成功或失败，都重置选择
                     firstSelection = null;
                 }
             });
