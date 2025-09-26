@@ -179,9 +179,13 @@
             };
             const minSize = 30, maxSize = 45;
             const placedBubbles = [], maxAttempts = 200;
-            const initialBubbleCount = 600; 
+
+            // 【已修改】根据屏幕大小动态计算泡泡数量，以适应不同设备
+            // 这个值越小，泡泡就越密集。可以根据需要在 3000 到 5000 之间调整。
+            const bubbleDensity = 3500; 
+            const initialBubbleCount = Math.floor((screenWidth * screenHeight) / bubbleDensity);
+
             const STORAGE_KEY = 'jinli_diner_clicks';
-            // 【修改】个人彩蛋触发阈值为5次
             const INDIVIDUAL_THRESHOLD = 5;
             const GLOBAL_THRESHOLD = 25;
 
@@ -189,7 +193,6 @@
                 'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png', 'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png', 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png', 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png', 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png', 'https://i.postimg.cc/fWVf2gsk/nerd.png', 'https://i.postimg.cc/t70T2gjd/cloud-1.png'
             ];
             
-            // 【修改】新增两个个人彩蛋
             const individualEasterEggs = {
                 'https://i.postimg.cc/j55dq3Pm/1.png': { owner: '粉螃蟹', title: '这里怎么有捕蟹笼！', content: '一定要狠狠鞭策这个粉螃蟹老师搬卡做美化啊好吗好的。', button: '蟹天蟹地你来啦' }, 
                 'https://i.postimg.cc/FKGH4Xd0/2.png': { owner: 'Marscoco', title: '被戳就这样扁扁地走开', content: '名下作品包括但不限于Mars预设/小剧场/通用美化/蒋作闻<br>诶？难道她真的是天才', button: '我真的不是m！' }, 
