@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>锦鲤欧皇大食堂</title>
+    <title>锦鲤欧皇大食堂 - 对对碰</title>
     <style>
         /* CSS 部分有修改 */
         @import url("https://fontsapi.zeoseven.com/568/main/result.css");
@@ -29,11 +29,28 @@
             background-color: rgba(255, 255, 255, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            opacity: 0; transition: opacity 0.5s ease;
+            opacity: 0; transition: opacity 0.5s ease, transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             animation: wobble 6s ease-in-out infinite;
             pointer-events: auto;
         }
+        
+        /* 【新增】选中泡泡的样式 */
+        .member-bubble.selected-bubble {
+            transform: scale(1.15);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 105, 180, 0.8);
+            border-color: rgba(255, 105, 180, 0.8);
+        }
+        /* 【新增】匹配失败的晃动动画 */
+        @keyframes mismatch-shake {
+            0%, 100% { transform: translateX(0) scale(1.1); }
+            25% { transform: translateX(-6px) scale(1.1); }
+            75% { transform: translateX(6px) scale(1.1); }
+        }
+        .member-bubble.mismatch {
+            animation: mismatch-shake 0.3s ease-in-out;
+        }
+
         @keyframes wobble {
             0%   { transform: translate(0, 0) rotate(-1deg); }
             50%  { transform: translate(0, 0) rotate(1deg); }
@@ -54,30 +71,21 @@
             overflow: hidden;
         }
         
-        /* 【修改】将水波纹效果替换为贴图效果 */
         .container::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%; /* 宽度改回100% */
-            height: 100%;
-            background-image: url('https://i.postimg.cc/6QWWDKnX/OIP.webp'); /* 使用您提供的贴图 */
-            background-repeat: repeat; /* 让贴图平铺满整个区域 */
-            opacity: 0.15; /* 调整透明度，让贴图更柔和，不抢戏 */
-            animation: flow-texture 25s linear infinite; /* 应用新的流动动画 */
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://i.postimg.cc/6QWWDKnX/OIP.webp'); 
+            background-repeat: repeat; 
+            opacity: 0.15;
+            animation: flow-texture 25s linear infinite; 
         }
-        /* 【修改】新的动画，让贴图背景缓慢移动 */
         @keyframes flow-texture {
             from { background-position: 0 0; }
-            to { background-position: -512px 512px; } /* 这是一个示例值，让背景向左下方缓慢移动 */
+            to { background-position: -512px 512px; }
         }
         
-        /* 这个规则依然需要，确保卡片内容在贴图之上 */
-        .container > * {
-            position: relative;
-            z-index: 2;
-        }
+        .container > * { position: relative; z-index: 2; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px) scale(0.98); }
@@ -103,7 +111,6 @@
             transform: scale(1.08);
         }
         
-        /* ... 其他 CSS, HTML 和 JavaScript 部分完全不变 ... */
         .info { margin-top: 20px; color: #4b5563; line-height: 1.8; font-size: 1rem; }
         .info p { margin: 10px 0; }
         .highlight { position: relative; overflow: hidden; font-weight: 600; color: #ffffff; padding: 5px 12px; border-radius: 6px; display: inline-block; margin: 4px 2px; border: none; background: linear-gradient(120deg, #ffc8dd, #bde0fe, #c7b0e8, #ffc8dd); background-size: 300% 300%; animation: aurora-glow 8s ease infinite; text-shadow: 0 1px 2px rgba(0,0,0,0.2); transition: transform 0.2s ease; vertical-align: middle; }
@@ -133,7 +140,7 @@
         <h1>锦鲤欧皇大食堂</h1>
         <img src="https://i.postimg.cc/J7JBFDYV/image.png" alt="邀请票根" class="ticket">
         <div class="info">
-            <p> 邀请朋友来玩，请指路<br> <span class="highlight">小红书</span> 搜索 <span class="highlight">「一条小锦鲤」</span><br> 进入主页找到审核群 </p>
+            <p> 邀请朋友来玩，请指路<br> <span class="highlight">小红书</span> 搜索 <span class="highlight">「一条小锦鲤」</span><br> 主页进入审核群 </p>
         </div>
         <div class="platform">
             <span class="platform-title">全平台airp社区：</span>
@@ -151,6 +158,8 @@
             <button id="closeEasterEggBtn" class="easter-egg-close-btn"></button>
         </div>
     </div>
+
+    <!-- SCRIPT 部分已完全重写 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const bubbleContainer = document.querySelector('.member-bubbles');
@@ -158,6 +167,11 @@
             const screenHeight = window.innerHeight;
             const card = document.querySelector('.container');
             const cardRect = card.getBoundingClientRect();
+            
+            // 游戏状态
+            let firstSelection = null;
+
+            // 配置项
             const safeZonePaddingHorizontal = 0.15, safeZonePaddingTop = -1.0, safeZonePaddingBottom = -1.0;
             const safeZoneRect = {
                 left:   cardRect.left + cardRect.width * safeZonePaddingHorizontal,
@@ -169,10 +183,11 @@
             const placedBubbles = [], maxAttempts = 200;
             const initialBubbleCount = 600; 
             const STORAGE_KEY = 'jinli_diner_clicks';
-            const INDIVIDUAL_THRESHOLD = 10;
-            const GLOBAL_THRESHOLD = 50;
+            const INDIVIDUAL_THRESHOLD = 5; // 降低彩蛋触发阈值，因为匹配更难
+            const GLOBAL_THRESHOLD = 25;    // 同上
+
             const memberIcons = [
-                'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png', 'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png', 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png', 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png', 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png'
+                'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png', 'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png', 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png', 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png', 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png', 'https://i.postimg.cc/fWVf2gsk/nerd.png', 'https://i.postimg.cc/t70T2gjd/cloud-1.png'
             ];
             const individualEasterEggs = {
                 'https://i.postimg.cc/j55dq3Pm/1.png': { owner: '粉螃蟹', title: '这里怎么有捕蟹笼！', content: '一定要狠狠鞭策这个粉螃蟹老师搬卡做美化啊好吗好的。', button: '蟹天蟹地你来啦' }, 'https://i.postimg.cc/FKGH4Xd0/2.png': { owner: 'Marscoco', title: '被戳就这样扁扁地走开', content: '名下作品包括但不限于Mars预设/小剧场/通用美化/蒋作闻<br>诶？难道她真的是天才', button: '我真的不是m！' }, 'https://i.postimg.cc/BvJnkn6q/3.png': { owner: '沈弥', title: '[错误429] 请求过于频繁', content: 'Ge弥ni-2.5-pro-preview-06-05-maxthinking决定截断', button: '我是弥妹' }, 'https://i.postimg.cc/qR5BNcGR/kiki.png': { owner: 'Kiki', title: '给我买KFC吃', content: '大火热炒陈觉斐魔丸男高对抗路10+开场白热玩星露谷物语<br>请多多关心吧！！', button: '左手一只ki' }, 'https://i.postimg.cc/t70X5XwG/image.png': { owner: '咪', title: '我一直在看着你', content: '路过请摸摸咪的耳朵<br>然后咪要继续拉磨', button: '助力咪摆脱黑奴身份' }, 'https://i.postimg.cc/VsJnDDpK/image.png': { owner: '江江', title: '', content: '', button: '身上还背着一个小江江呀' }, 'https://i.postimg.cc/cLBnrjtL/image.png': { owner: '汤圆', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/sfbS85Rs/image.png': { owner: '米线', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/9fXqTpyt/image.png': { owner: '小颂', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/Qx55rVX5/image.png': { owner: 'Vivi', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/XqBjdZ2g/image.png': { owner: '鸡腿子', title: '', content: '', button: ' ' }, 'https://i.postimg.cc/vZsn8MBK/image.png': { owner: '乌鸦', title: '', content: '', button: '右手一只鸦' }
@@ -180,18 +195,165 @@
             const globalEasterEgg = {
                 image: 'https://i.postimg.cc/zvXZTRVb/9-4-1.gif', title: '泡泡终结者！', content: '系统检测到你操作过于频繁<br>请聊半小时ai聊天以后再回来', button: '我还能戳！'
             };
+            
+            // DOM 元素
             const easterEggOverlay = document.getElementById('easterEggOverlay');
             const easterEggImage = document.getElementById('easterEggImage');
             const easterEggTitle = document.getElementById('easterEggTitle');
             const easterEggContent = document.getElementById('easterEggContent');
             const closeEasterEggBtn = document.getElementById('closeEasterEggBtn');
-            function createBubble() { let currentBubbleInfo = {}, hasOverlap = true, attempts = 0; while (hasOverlap && attempts < maxAttempts) { const size = Math.random() * (maxSize - minSize) + minSize; const radius = size / 2; const x = Math.random() * (screenWidth - size), y = Math.random() * (screenHeight - size); if (x + size > safeZoneRect.left && x < safeZoneRect.right && y + size > safeZoneRect.top && y < safeZoneRect.bottom) { attempts++; continue; } currentBubbleInfo = { id: Date.now() + Math.random(), x, y, radius }; hasOverlap = false; for (const placed of placedBubbles) { const dx = currentBubbleInfo.x - placed.x, dy = currentBubbleInfo.y - placed.y; const distance = Math.sqrt(dx * dx + dy * dy); if (distance < currentBubbleInfo.radius + placed.radius + 5) { hasOverlap = true; break; } } attempts++; } if (!hasOverlap) { placedBubbles.push(currentBubbleInfo); const bubble = document.createElement('div'); bubble.className = 'member-bubble'; bubble.dataset.id = currentBubbleInfo.id; const size = currentBubbleInfo.radius * 2; bubble.style.width = `${size}px`; bubble.style.height = `${size}px`; bubble.style.left = `${currentBubbleInfo.x}px`; bubble.style.top = `${currentBubbleInfo.y}px`; bubble.style.backgroundImage = `url(${memberIcons[Math.floor(Math.random() * memberIcons.length)]})`; bubble.style.animationDuration = `${Math.random() * 4 + 6}s`; bubble.style.animationDelay = `-${Math.random() * 5}s`; bubbleContainer.appendChild(bubble); setTimeout(() => { bubble.style.opacity = '0.9'; }, 50); } }
-            function getClickData() { const data = localStorage.getItem(STORAGE_KEY); try { return data ? JSON.parse(data) : { global: 0, individuals: {} }; } catch (e) { return { global: 0, individuals: {} }; } }
-            function saveClickData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-            function showEasterEgg(data) { easterEggImage.src = data.image; easterEggTitle.innerHTML = data.title; easterEggContent.innerHTML = data.content; closeEasterEggBtn.innerHTML = data.button; easterEggOverlay.style.display = 'flex'; }
-            bubbleContainer.addEventListener('click', function(event) { const clickedBubble = event.target.closest('.member-bubble'); if (!clickedBubble || clickedBubble.classList.contains('popping-out')) return; const style = window.getComputedStyle(clickedBubble); const rawUrl = style.backgroundImage.slice(5, -2); const clickData = getClickData(); clickData.global++; clickData.individuals[rawUrl] = (clickData.individuals[rawUrl] || 0) + 1; console.log(`总点击: ${clickData.global}, ${individualEasterEggs[rawUrl]?.owner || '未知'} 点击: ${clickData.individuals[rawUrl]}`); let triggered = false; if (clickData.individuals[rawUrl] >= INDIVIDUAL_THRESHOLD) { const eggInfo = individualEasterEggs[rawUrl]; if (eggInfo) { triggered = true; const displayData = { image: rawUrl, title: eggInfo.title || `你发现了 ${eggInfo.owner} 的秘密！`, content: eggInfo.content || '继续探索，看看还能发现什么吧！', button: eggInfo.button.trim() || '好耶！' }; showEasterEgg(displayData); clickData.individuals[rawUrl] = 0; } } if (!triggered && clickData.global >= GLOBAL_THRESHOLD) { showEasterEgg(globalEasterEgg); clickData.global = 0; } saveClickData(clickData); const bubbleId = parseFloat(clickedBubble.dataset.id); const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId); if (indexToRemove > -1) { placedBubbles.splice(indexToRemove, 1); } clickedBubble.classList.add('popping-out'); setTimeout(() => { clickedBubble.remove(); createBubble(); }, 300); });
+
+            // --- 函数区 ---
+            
+            function createBubble() { 
+                let currentBubbleInfo = {}, hasOverlap = true, attempts = 0; 
+                while (hasOverlap && attempts < maxAttempts) { 
+                    const size = Math.random() * (maxSize - minSize) + minSize; 
+                    const radius = size / 2; 
+                    const x = Math.random() * (screenWidth - size), y = Math.random() * (screenHeight - size); 
+                    if (x + size > safeZoneRect.left && x < safeZoneRect.right && y + size > safeZoneRect.top && y < safeZoneRect.bottom) { 
+                        attempts++; continue; 
+                    } 
+                    currentBubbleInfo = { id: Date.now() + Math.random(), x, y, radius }; 
+                    hasOverlap = false; 
+                    for (const placed of placedBubbles) { 
+                        const dx = currentBubbleInfo.x - placed.x, dy = currentBubbleInfo.y - placed.y; 
+                        const distance = Math.sqrt(dx * dx + dy * dy); 
+                        if (distance < currentBubbleInfo.radius + placed.radius + 5) { 
+                            hasOverlap = true; break; 
+                        } 
+                    } 
+                    attempts++; 
+                } 
+                if (!hasOverlap) { 
+                    placedBubbles.push(currentBubbleInfo); 
+                    const bubble = document.createElement('div'); 
+                    bubble.className = 'member-bubble'; 
+                    bubble.dataset.id = currentBubbleInfo.id; 
+                    const size = currentBubbleInfo.radius * 2; 
+                    bubble.style.width = `${size}px`; 
+                    bubble.style.height = `${size}px`; 
+                    bubble.style.left = `${currentBubbleInfo.x}px`; 
+                    bubble.style.top = `${currentBubbleInfo.y}px`; 
+                    bubble.style.backgroundImage = `url(${memberIcons[Math.floor(Math.random() * memberIcons.length)]})`; 
+                    bubble.style.animationDuration = `${Math.random() * 4 + 6}s`; 
+                    bubble.style.animationDelay = `-${Math.random() * 5}s`; 
+                    bubbleContainer.appendChild(bubble); 
+                    setTimeout(() => { bubble.style.opacity = '0.9'; }, 50); 
+                } 
+            }
+
+            function getClickData() { 
+                const data = localStorage.getItem(STORAGE_KEY); 
+                try { return data ? JSON.parse(data) : { global: 0, individuals: {} }; } 
+                catch (e) { return { global: 0, individuals: {} }; } 
+            }
+
+            function saveClickData(data) { 
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
+            }
+
+            function showEasterEgg(data) { 
+                easterEggImage.src = data.image; 
+                easterEggTitle.innerHTML = data.title; 
+                easterEggContent.innerHTML = data.content; 
+                closeEasterEggBtn.innerHTML = data.button; 
+                easterEggOverlay.style.display = 'flex'; 
+            }
+
+            // 泡泡消除函数，消除后会生成新的补位
+            function popBubble(bubble) {
+                const bubbleId = parseFloat(bubble.dataset.id);
+                const indexToRemove = placedBubbles.findIndex(b => b.id === bubbleId);
+                if (indexToRemove > -1) {
+                    placedBubbles.splice(indexToRemove, 1);
+                }
+                bubble.classList.add('popping-out');
+                setTimeout(() => {
+                    bubble.remove();
+                    createBubble(); // 补位
+                }, 300);
+            }
+
+            // --- 事件监听与主逻辑 ---
+
+            bubbleContainer.addEventListener('click', function(event) {
+                const clickedBubble = event.target.closest('.member-bubble');
+                if (!clickedBubble || clickedBubble.classList.contains('popping-out')) return;
+
+                // --- 对对碰逻辑 ---
+                if (!firstSelection) {
+                    // 1. 这是第一次点击
+                    firstSelection = clickedBubble;
+                    firstSelection.classList.add('selected-bubble');
+                } else {
+                    // 2. 这是第二次点击，进行匹配
+                    const secondSelection = clickedBubble;
+                    
+                    // 如果点的是同一个，则取消选择
+                    if (firstSelection === secondSelection) {
+                        firstSelection.classList.remove('selected-bubble');
+                        firstSelection = null;
+                        return;
+                    }
+
+                    const firstUrl = firstSelection.style.backgroundImage;
+                    const secondUrl = secondSelection.style.backgroundImage;
+
+                    if (firstUrl === secondUrl) {
+                        // 2a. 匹配成功！
+                        firstSelection.classList.remove('selected-bubble');
+                        
+                        // 触发消除
+                        popBubble(firstSelection);
+                        popBubble(secondSelection);
+
+                        // --- 匹配成功，在这里计算彩蛋 ---
+                        const clickData = getClickData();
+                        clickData.global++;
+                        const rawUrl = firstUrl.slice(5, -2); // 获取干净的URL
+                        clickData.individuals[rawUrl] = (clickData.individuals[rawUrl] || 0) + 1;
+                        console.log(`匹配成功! 总匹配: ${clickData.global}, ${individualEasterEggs[rawUrl]?.owner || '未知'} 匹配: ${clickData.individuals[rawUrl]}`);
+                        
+                        let triggered = false;
+                        if (clickData.individuals[rawUrl] >= INDIVIDUAL_THRESHOLD) {
+                            const eggInfo = individualEasterEggs[rawUrl];
+                            if (eggInfo) {
+                                triggered = true;
+                                const displayData = { image: rawUrl, title: eggInfo.title || `你发现了 ${eggInfo.owner} 的秘密！`, content: eggInfo.content || '继续探索，看看还能发现什么吧！', button: eggInfo.button.trim() || '好耶！' };
+                                showEasterEgg(displayData);
+                                clickData.individuals[rawUrl] = 0; // 重置计数
+                            }
+                        }
+                        if (!triggered && clickData.global >= GLOBAL_THRESHOLD) {
+                            showEasterEgg(globalEasterEgg);
+                            clickData.global = 0; // 重置计数
+                        }
+                        saveClickData(clickData);
+                        // --- 彩蛋逻辑结束 ---
+
+                    } else {
+                        // 2b. 匹配失败
+                        firstSelection.classList.remove('selected-bubble');
+                        
+                        // 添加短暂的晃动效果
+                        firstSelection.classList.add('mismatch');
+                        secondSelection.classList.add('mismatch');
+                        setTimeout(() => {
+                            if(firstSelection) firstSelection.classList.remove('mismatch');
+                            if(secondSelection) secondSelection.classList.remove('mismatch');
+                        }, 300);
+                    }
+                    
+                    // 无论成功或失败，都重置选择
+                    firstSelection = null;
+                }
+            });
+
             closeEasterEggBtn.addEventListener('click', () => { easterEggOverlay.style.display = 'none'; });
             easterEggOverlay.addEventListener('click', (event) => { if (event.target === easterEggOverlay) { easterEggOverlay.style.display = 'none'; } });
+
+            // 初始化
             for (let i = 0; i < initialBubbleCount; i++) { createBubble(); }
         });
     </script>
