@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>锦鲤欧皇食堂 </title>
     <style>
-        /* CSS 部分无需修改 */
+        /* CSS 部分已修改 */
         @import url("https://fontsapi.zeoseven.com/568/main/result.css");
         body, html {
             margin: 0; padding: 0; width: 100%;
@@ -129,6 +129,35 @@
         .easter-egg-card p { margin: 0 0 20px; font-size: 1rem; color: #666; line-height: 1.6; }
         .easter-egg-close-btn { background-color: #ffafcc; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; min-width: 120px; }
         .easter-egg-close-btn:hover { background-color: #ff8fab; transform: scale(1.05); }
+
+        .score-board {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #4b5563;
+            padding: 8px 20px;
+            border-radius: 15px;
+            font-family: "Fusion Pixel 10px M zh_hans", sans-serif;
+            font-size: 1.1rem;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        }
+        /* 【已修改】积分样式 */
+        #score {
+            font-weight: bold;
+            color: #f97316; /* 颜色已更改为亮橙色 */
+            text-shadow: 0 0 8px rgba(249, 115, 22, 0.6); /* 阴影颜色同步更改 */
+            font-size: 1.3rem;
+        }
     </style>
 </head>
 <body>
@@ -157,7 +186,12 @@
         </div>
     </div>
 
-    <!-- SCRIPT 部分已修改 -->
+    <div class="score-board">
+        <span>积分:</span>
+        <span id="score">0</span>
+    </div>
+
+    <!-- SCRIPT 部分无需修改 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const bubbleContainer = document.querySelector('.member-bubbles');
@@ -195,12 +229,10 @@
             const INDIVIDUAL_THRESHOLD = 5;
             const GLOBAL_THRESHOLD = 50;
 
-            // 【已修改】添加了新的头像链接
             const memberIcons = [
                 'https://i.postimg.cc/j55dq3Pm/1.png', 'https://i.postimg.cc/FKGH4Xd0/2.png', 'https://i.postimg.cc/BvJnkn6q/3.png', 'https://i.postimg.cc/qR5BNcGR/kiki.png', 'https://i.postimg.cc/t70X5XwG/image.png', 'https://i.postimg.cc/VsJnDDpK/image.png', 'https://i.postimg.cc/cLBnrjtL/image.png', 'https://i.postimg.cc/sfbS85Rs/image.png', 'https://i.postimg.cc/9fXqTpyt/image.png', 'https://i.postimg.cc/Qx55rVX5/image.png', 'https://i.postimg.cc/XqBjdZ2g/image.png', 'https://i.postimg.cc/vZsn8MBK/image.png', 'https://i.postimg.cc/fWVf2gsk/nerd.png', 'https://i.postimg.cc/t70T2gjd/cloud-1.png', 'https://i.postimg.cc/Y9Ycgc7V/IMG-1404.png'
             ];
             
-            // 【已修改】添加了新的独立彩蛋
             const individualEasterEggs = {
                 'https://i.postimg.cc/j55dq3Pm/1.png': { owner: '粉螃蟹', title: '这里怎么有捕蟹笼！', content: '一定要狠狠鞭策这个粉螃蟹老师搬卡做美化啊好吗好的。', button: '蟹天蟹地你来啦' }, 
                 'https://i.postimg.cc/FKGH4Xd0/2.png': { owner: 'Marscoco', title: '被戳就这样扁扁地走开', content: '名下作品包括但不限于Mars预设/小剧场/通用美化/蒋作闻<br>诶？难道她真的是天才', button: '我真的不是m！' }, 
@@ -228,6 +260,7 @@
             const easterEggTitle = document.getElementById('easterEggTitle');
             const easterEggContent = document.getElementById('easterEggContent');
             const closeEasterEggBtn = document.getElementById('closeEasterEggBtn');
+            const scoreDisplay = document.getElementById('score');
 
             // --- 函数区 ---
             
@@ -271,8 +304,13 @@
 
             function getClickData() { 
                 const data = localStorage.getItem(STORAGE_KEY); 
-                try { return data ? JSON.parse(data) : { global: 0, individuals: {} }; } 
-                catch (e) { return { global: 0, individuals: {} }; } 
+                try {
+                    const parsed = data ? JSON.parse(data) : { global: 0, individuals: {}, score: 0 };
+                    if (parsed.score === undefined) parsed.score = 0; // 向后兼容
+                    return parsed;
+                } catch (e) {
+                    return { global: 0, individuals: {}, score: 0 };
+                } 
             }
 
             function saveClickData(data) { 
@@ -298,6 +336,16 @@
                     bubble.remove();
                     createBubble();
                 }, 300);
+            }
+            
+            function animateScoreUpdate() {
+                const scoreBoard = document.querySelector('.score-board');
+                if (scoreBoard) {
+                    scoreBoard.style.transform = 'translateX(-50%) scale(1.15)';
+                    setTimeout(() => {
+                        scoreBoard.style.transform = 'translateX(-50%) scale(1)';
+                    }, 250);
+                }
             }
 
             // --- 事件监听与主逻辑 ---
@@ -328,26 +376,36 @@
                         popBubble(secondSelection);
 
                         const clickData = getClickData();
-                        clickData.global++;
+                        let scoreToAdd = 5; // 成功匹配基础分
+                        let triggeredEasterEgg = false;
+
                         const rawUrl = firstUrl.slice(5, -2);
                         clickData.individuals[rawUrl] = (clickData.individuals[rawUrl] || 0) + 1;
-                        console.log(`匹配成功! 总匹配: ${clickData.global}, ${individualEasterEggs[rawUrl]?.owner || '未知'} 匹配: ${clickData.individuals[rawUrl]}`);
-                        
-                        let triggered = false;
+                        console.log(`匹配成功! 总匹配: ${clickData.global + 1}, ${individualEasterEggs[rawUrl]?.owner || '未知'} 匹配: ${clickData.individuals[rawUrl]}`);
+
                         if (clickData.individuals[rawUrl] >= INDIVIDUAL_THRESHOLD) {
                             const eggInfo = individualEasterEggs[rawUrl];
                             if (eggInfo) {
-                                triggered = true;
-                                const displayData = { image: rawUrl, title: eggInfo.title || `你发现了 ${eggInfo.owner} 的秘密！`, content: eggInfo.content || '继续探索，看看还能发现什么吧！', button: eggInfo.button.trim() || '好耶！' };
+                                triggeredEasterEgg = true;
+                                scoreToAdd += 25; // 独立彩蛋奖励积分
+                                const displayData = { image: rawUrl, title: eggInfo.title, content: eggInfo.content, button: eggInfo.button.trim() };
                                 showEasterEgg(displayData);
-                                clickData.individuals[rawUrl] = 0;
+                                clickData.individuals[rawUrl] = 0; // 重置计数
                             }
                         }
-                        if (!triggered && clickData.global >= GLOBAL_THRESHOLD) {
+
+                        clickData.global++;
+                        if (!triggeredEasterEgg && clickData.global >= GLOBAL_THRESHOLD) {
+                            scoreToAdd += 50; // 全局彩蛋奖励积分
                             showEasterEgg(globalEasterEgg);
-                            clickData.global = 0;
+                            clickData.global = 0; // 重置计数
                         }
+
+                        clickData.score += scoreToAdd;
                         saveClickData(clickData);
+                        
+                        scoreDisplay.textContent = clickData.score;
+                        animateScoreUpdate();
 
                     } else {
                         firstSelection.classList.remove('selected-bubble');
@@ -368,6 +426,7 @@
             easterEggOverlay.addEventListener('click', (event) => { if (event.target === easterEggOverlay) { easterEggOverlay.style.display = 'none'; } });
 
             // 初始化
+            scoreDisplay.textContent = getClickData().score;
             for (let i = 0; i < initialBubbleCount; i++) { createBubble(); }
         });
     </script>
